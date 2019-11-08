@@ -6,6 +6,8 @@ var karaoke = {
 	cantadas: ko.observable('todas'),
 	detalleCancion: ko.observable(),
 	detallePuntajes: ko.observableArray([]),
+	cancionesRandom: ko.observableArray([]),
+	cantidadRandom: ko.observable(1),
 	init: function () {
 		ko.applyBindings(this);
 		
@@ -44,7 +46,7 @@ var karaoke = {
 						return obj.num > 0;
 					}));
 					
-					$('#modalDetalle').modal('show')
+					$('#modalDetalle').modal('show');
 				}
 			}
 		});
@@ -52,6 +54,16 @@ var karaoke = {
 	limpiarFiltros: function () {
 		karaoke.cancion('').dueto('todas').cantadas('todas').nuevas('todas');
 		karaoke.cargarCanciones();
+	},
+	random: function() {
+		karaoke.cancionesRandom.removeAll();
+
+		for (var i = 0; i < karaoke.cantidadRandom(); i += 1) {
+			var indice = Math.floor(Math.random() * karaoke.canciones().length);
+			karaoke.cancionesRandom.push(karaoke.canciones()[indice]);
+		}
+
+		$('#modalRandom').modal('show');
 	},
 	clasePuntos: function (puntos) {
 		if (puntos >= 9000) { return 'puntos-9k'; }
