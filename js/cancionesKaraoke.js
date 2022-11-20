@@ -1,6 +1,8 @@
 var karaoke = {
 	canciones: ko.observableArray([]),
 	cancion: ko.observable(),
+	idiomas: ko.observableArray([]),
+	idioma: ko.observable(),
 	dueto: ko.observable('todas'),
 	nuevas: ko.observable('todas'),
 	cantadas: ko.observable('todas'),
@@ -14,16 +16,18 @@ var karaoke = {
 		sheetrock.defaults.reset = true;
 		sheetrock.defaults.rowTemplate = function () { return ''; }
 		
+		karaoke.cargarIdiomas();
 		karaoke.cargarCanciones();
 	},
 	cargarCanciones: function () {
 		$('body').sheetrock({
 			url: 'https://docs.google.com/spreadsheets/d/13ywXsMPe0JNZCxWLp3VJnlfMZYDZc2Q6rqxtEAP79Hk/edit#gid=1613025820',
-			query: "select A, B, C, D, E where 1 = 1 " +
+			query: "select A, B, C, D, E, F where 1 = 1 " +
 				   (karaoke.cancion() ? "and lower(A) contains '" + karaoke.cancion().toLowerCase() + "'" : "") +
 				   (karaoke.dueto() === 'si' ? "and B = 'SI'" : (karaoke.dueto() === 'no' ? "and B = 'NO'" : "")) +
 				   (karaoke.nuevas() === 'si' ? "and C = 'Nueva'" : "") +
 				   (karaoke.cantadas() === 'si' ? "and D > 0" : (karaoke.cantadas() === 'no' ? "and D is null" : "")) +
+				   (karaoke.idioma() ? "and F = '" + karaoke.idioma() + "'" : "") +
 				   " order by A",
 			callback: function (error, options, response) {
 				if (error === null) {
@@ -33,6 +37,19 @@ var karaoke = {
 				}
 			}
 		});
+	},
+	cargarIdiomas: function () {
+		$('body').sheetrock({
+			url: 'https://docs.google.com/spreadsheets/d/13ywXsMPe0JNZCxWLp3VJnlfMZYDZc2Q6rqxtEAP79Hk/edit#gid=1613025820',
+			query: "select F, count(E) group by F order by F",
+			callback: function (error, options, response) {
+				if (error === null) {
+					karaoke.idiomas(response.rows.filter(function (obj) {
+						return obj.num > 0;
+					}));
+				}
+			}
+		});	
 	},
 	cargarDetalle: function (row) {
 		karaoke.detalleCancion(row.cells.Cancion);
@@ -52,7 +69,7 @@ var karaoke = {
 		});
 	},
 	limpiarFiltros: function () {
-		karaoke.cancion('').dueto('todas').cantadas('todas').nuevas('todas');
+		karaoke.cancion('').dueto('todas').cantadas('todas').nuevas('todas').idioma('');
 		karaoke.cargarCanciones();
 	},
 	random: function() {
