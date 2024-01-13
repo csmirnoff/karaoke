@@ -5,6 +5,8 @@ var karaoke = {
 	idioma: ko.observable(),
 	decada: ko.observable(),
 	decadas: ko.observableArray([]),
+	anio: ko.observable(),
+	anios: ko.observableArray([]),
 	dueto: ko.observable('todas'),
 	nuevas: ko.observable('todas'),
 	cantadas: ko.observable('todas'),
@@ -21,6 +23,7 @@ var karaoke = {
 		
 		karaoke.cargarIdiomas();
 		karaoke.cargarDecadas();
+		karaoke.cargarAnios();
 		karaoke.cargarCanciones();
 	},
 	cargarCanciones: function () {
@@ -33,6 +36,7 @@ var karaoke = {
 				   (karaoke.cantadas() === 'si' ? "and D > 0" : (karaoke.cantadas() === 'no' ? "and D is null" : "")) +
 				   (karaoke.idioma() ? "and F = '" + karaoke.idioma() + "'" : "") +
 				   (karaoke.decada() ? "and H = " + karaoke.decada() : "") +
+				   (karaoke.anio() ? "and G = " + karaoke.anio() : "") +
 				   " order by A",
 			callback: function (error, options, response) {
 				if (error === null) {
@@ -60,10 +64,23 @@ var karaoke = {
 	cargarDecadas: function () {
 		$('body').sheetrock({
 			url: 'https://docs.google.com/spreadsheets/d/13ywXsMPe0JNZCxWLp3VJnlfMZYDZc2Q6rqxtEAP79Hk/edit#gid=1613025820',
-			query: "select H, count(E) group by H order by H",
+			query: "select H, count(E) group by H order by H DESC",
 			callback: function (error, options, response) {
 				if (error === null) {
 					karaoke.decadas(response.rows.filter(function (obj) {
+						return obj.num > 0;
+					}));
+				}
+			}
+		});	
+	},
+	cargarAnios: function () {
+		$('body').sheetrock({
+			url: 'https://docs.google.com/spreadsheets/d/13ywXsMPe0JNZCxWLp3VJnlfMZYDZc2Q6rqxtEAP79Hk/edit#gid=1613025820',
+			query: "select G, count(E) group by G order by G DESC",
+			callback: function (error, options, response) {
+				if (error === null) {
+					karaoke.anios(response.rows.filter(function (obj) {
 						return obj.num > 0;
 					}));
 				}
@@ -88,7 +105,7 @@ var karaoke = {
 		});
 	},
 	limpiarFiltros: function () {
-		karaoke.cancion('').dueto('todas').cantadas('todas').nuevas('todas').idioma('').decada('');
+		karaoke.cancion('').dueto('todas').cantadas('todas').nuevas('todas').idioma('').decada('').anio('');
 		karaoke.cargarCanciones();
 	},
 	random: function() {
